@@ -30,8 +30,8 @@ maximum:
 	subl $4, %esp	# Preserve old %ebp.
 	movl %ebp, (%esp)	#
 	movl %esp, %ebp	# Make %ebp equal to %esp.
-	movl 8(%ebp), %ecx	# Pointer to data items.
 
+	movl 8(%ebp), %ecx	# Pointer to data items.
 	movl $0, %edi	# Index for the data items.
 	movl (%ecx), %eax	# Since it is the first number.
 
