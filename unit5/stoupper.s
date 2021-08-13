@@ -24,34 +24,40 @@
 
 .globl read
 .globl write
-.globl to_uppercase
+.globl uppercase
 
 .globl _start
 _start:
+	pushl $BUFFER_SIZE
+	pushl $BUFFER_DATA
+	pushl $STDIN
 	call read
-	pushl %eax	#Save the number of bytes read into the buffer.
-	call close_fd
-	call to_uppercase
+	addl $12, %esp
+
+	pushl $0
+	pushl $BUFFER_DATA
+	pushl %eax
+	call uppercase
+	addl $12, %esp
+
+	pushl %eax
+	pushl $BUFFER_DATA
+	pushl $STDOUT
 	call write
-	addl $4, %esp	#Restore esp.
+	addl $12, %esp
 
 	movl $SYS_EXIT, %eax
 	movl $0, %ebx
-	#movl 0(%esp), %ebx
 	int $0x80
 
 .type read, @function
 read:
 	pushl %ebp
 	movl %esp, %ebp
-
-	call open_fd
-	pushl %eax	#FD
 	movl $SYS_READ, %eax
-	#movl $STDIN, %ebx
-	movl (%esp), %ebx
-	movl $BUFFER_DATA, %ecx
-	movl $BUFFER_SIZE, %edx	
+	movl 8(%ebp), %ebx
+	movl 12(%ebp), %ecx
+	movl 16(%ebp), %edx	
 	int $0x80
 	
 	movl %ebp, %esp
@@ -62,68 +68,71 @@ read:
 write:
 	pushl %ebp
 	movl %esp, %ebp
-
 	movl $SYS_WRITE, %eax
-	movl $STDOUT, %ebx
-	movl $BUFFER_DATA, %ecx
-	movl 8(%ebp), %edx
-	int $0x80
-
-	movl %ebp, %esp
-	popl %ebp
-	ret
-
-.type to_uppercase, @function
-to_uppercase:
-	pushl %ebp
-	movl %esp, %ebp
-
-	movl $BUFFER_DATA, %edi
-	movl $0, %esi
-	cmpb $0, (%edi,%esi,1)
-	je end_loop
-
-	start_loop:
-	cmpb $LOWERCASE_A, (%edi,%esi,1)
-	jl next_byte
-	cmpb $LOWERCASE_Z, (%edi,%esi,1)
-	jg next_byte
-	addb $UPPER_CONVERSION, (%edi,%esi,1)
-
-next_byte:
-	addl $1, %esi
-	cmpb $0, (%edi,%esi,1)
-	jne start_loop
-
-	end_loop:
-	movl %ebp, %esp
-	popl %ebp
-	ret
-
-.type open_fd, @function
-open_fd:
-	pushl %ebp
-	movl %esp, %ebp
-
-	movl $SYS_OPEN, %eax
-	movl 24(%ebp), %ebx #infile
-	movl $O_RDONLY, %ecx
-	movl $0666, %edx
-	int $0x80
-
-	movl %ebp, %esp
-	popl %ebp
-	ret
-
-.type close_fd, @function
-close_fd:
-	pushl %ebp
-	movl %esp, %ebp
-
-	movl $SYS_CLOSE, %eax
 	movl 8(%ebp), %ebx
+	movl 12(%ebp), %ecx
+	movl 16(%ebp), %edx
 	int $0x80
 
 	movl %ebp, %esp
 	popl %ebp
 	ret
+
+.type uppercase, @function
+uppercase:
+	pushl %ebp
+	movl %esp, %ebp
+	movl 8(%ebp), %esi	#Load the first arg(number of data read).
+	movl 12(%ebp), %edi	#Load the second arg(data items buffer).
+	movl 16(%ebp), %eax	#Load the third arg(recursion counter).
+
+	cmpl $0, %esi	#Impossible to be valid after a recursion call due to the base case.
+	je convert
+
+	decl %esi
+	incl %eax
+	pushl %eax
+	pushl %edi
+	pushl %esi
+	call uppercase
+
+	convert:
+	cmpb $LOWERCASE_A, (%edi,%esi,1)
+	jl end_uppercase
+	cmpb $LOWERCASE_Z, (%edi,%esi,1)
+	jg end_uppercase
+	addb $UPPER_CONVERSION, (%edi,%esi,1)
+	incl %esi	#Index the next item.
+
+	end_uppercase:
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+#.type open_fd, @function
+#open_fd:
+#	pushl %ebp
+#	movl %esp, %ebp
+#
+#	movl $SYS_OPEN, %eax
+#	movl 24(%ebp), %ebx #infile
+#	movl $O_RDONLY, %ecx
+#	movl $0666, %edx
+#	int $0x80
+#
+#	movl %ebp, %esp
+#	popl %ebp
+#	ret
+
+#.type close_fd, @function
+#close_fd:
+#	pushl %ebp
+#	movl %esp, %ebp
+#
+#	movl $SYS_CLOSE, %eax
+#	movl 8(%ebp), %ebx
+#	int $0x80
+#
+#	movl %ebp, %esp
+#	popl %ebp
+#	ret
