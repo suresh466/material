@@ -7,11 +7,14 @@
 .equ STDERROR, 2
 .equ SYS_READ, 3
 .equ SYS_WRITE, 4
+.equ SYS_OPEN, 5
 .equ SYS_CLOSE, 6
 .equ SYS_EXIT, 1
 .equ LOWERCASE_A, 'a'
 .equ LOWERCASE_Z, 'z'
 .equ UPPER_CONVERSION, 'A' - 'a'
+.equ O_RDONLY, 0
+.equ O_CREAT_WRONLY_TRUNC, 03101
 
 .section .bss
 .equ BUFFER_SIZE, 500
@@ -27,13 +30,14 @@
 _start:
 	call read
 	pushl %eax	#Save the number of bytes read into the buffer.
+	call close_fd
 	call to_uppercase
 	call write
-	addl $4, %esp
+	addl $4, %esp	#Restore esp.
 
-	#Exit
 	movl $SYS_EXIT, %eax
 	movl $0, %ebx
+	#movl 0(%esp), %ebx
 	int $0x80
 
 .type read, @function
@@ -41,8 +45,11 @@ read:
 	pushl %ebp
 	movl %esp, %ebp
 
+	call open_fd
+	pushl %eax	#FD
 	movl $SYS_READ, %eax
-	movl $STDIN, %ebx
+	#movl $STDIN, %ebx
+	movl (%esp), %ebx
 	movl $BUFFER_DATA, %ecx
 	movl $BUFFER_SIZE, %edx	
 	int $0x80
@@ -89,6 +96,34 @@ next_byte:
 	jne start_loop
 
 	end_loop:
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+.type open_fd, @function
+open_fd:
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl $SYS_OPEN, %eax
+	movl 24(%ebp), %ebx #infile
+	movl $O_RDONLY, %ecx
+	movl $0666, %edx
+	int $0x80
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+.type close_fd, @function
+close_fd:
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl $SYS_CLOSE, %eax
+	movl 8(%ebp), %ebx
+	int $0x80
+
 	movl %ebp, %esp
 	popl %ebp
 	ret
