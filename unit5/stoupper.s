@@ -28,9 +28,15 @@
 
 .globl _start
 _start:
+	pushl 8(%esp)
+	pushl $O_RDONLY
+	call open_fd
+	addl $8, %esp
+
 	pushl $BUFFER_SIZE
 	pushl $BUFFER_DATA
-	pushl $STDIN
+	pushl %eax
+	#pushl $STDIN
 	call read
 	addl $12, %esp
 
@@ -40,9 +46,17 @@ _start:
 	call uppercase
 	addl $12, %esp
 
-	pushl %eax
+	movl %eax, %esi	#Sotre number of  data items read.
+
+	pushl 12(%esp)
+	pushl $O_CREAT_WRONLY_TRUNC
+	call open_fd
+	addl $8, %esp
+
+	pushl %esi	#Preserved across calls.
 	pushl $BUFFER_DATA
-	pushl $STDOUT
+	pushl %eax	#FD
+	#pushl $STDOUT
 	call write
 	addl $12, %esp
 
@@ -109,20 +123,20 @@ uppercase:
 	popl %ebp
 	ret
 
-#.type open_fd, @function
-#open_fd:
-#	pushl %ebp
-#	movl %esp, %ebp
-#
-#	movl $SYS_OPEN, %eax
-#	movl 24(%ebp), %ebx #infile
-#	movl $O_RDONLY, %ecx
-#	movl $0666, %edx
-#	int $0x80
-#
-#	movl %ebp, %esp
-#	popl %ebp
-#	ret
+.type open_fd, @function
+open_fd:
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl $SYS_OPEN, %eax
+	movl 8(%ebp), %ecx
+	movl 12(%ebp), %ebx
+	movl $0666, %edx
+	int $0x80
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
 
 #.type close_fd, @function
 #close_fd:
