@@ -74,6 +74,10 @@ read:
 	movl 12(%ebp), %ecx
 	movl 16(%ebp), %edx	
 	int $0x80
+
+	pushl %eax
+	call close_fd
+	popl %eax
 	
 	movl %ebp, %esp
 	popl %ebp
@@ -88,6 +92,10 @@ write:
 	movl 12(%ebp), %ecx
 	movl 16(%ebp), %edx
 	int $0x80
+
+	pushl %eax
+	call close_fd
+	popl %eax
 
 	movl %ebp, %esp
 	popl %ebp
@@ -173,15 +181,15 @@ open_fd_out:
 	movl $STDOUT, %eax
 	ret
 
-#.type close_fd, @function
-#close_fd:
-#	pushl %ebp
-#	movl %esp, %ebp
-#
-#	movl $SYS_CLOSE, %eax
-#	movl 8(%ebp), %ebx
-#	int $0x80
-#
-#	movl %ebp, %esp
-#	popl %ebp
-#	ret
+.type close_fd, @function
+close_fd:
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl $SYS_CLOSE, %eax
+	movl 8(%ebp), %ebx
+	int $0x80
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
