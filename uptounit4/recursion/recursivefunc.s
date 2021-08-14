@@ -43,17 +43,21 @@ _start:
 .type factorial, @function
 
 factorial:
-	subl $4, %esp	# Preserve the value of %ebp
-	movl %ebp, (%esp)	#
+	#subl $4, %esp	# Preserve the value of %ebp
+	#movl %ebp, (%esp)	#
+	pushl %ebp
 	movl %esp, %ebp	# Make %ebp equal to %esp
+
 	movl 8(%ebp), %ebx	# Load the 1st argument.
+
 	cmpl $1, %ebx	# Check to see if end factorial
 	je factorial_end	# or base case.
 
 	decl %ebx	# Get the first argument for
 			# the next recursive call.
-	subl $4, %esp 	# Push the 1st argument for
-	movl %ebx, (%esp)	# the next resursive call.
+	#subl $4, %esp 	# Push the 1st argument for
+	#movl %ebx, (%esp)	# the next resursive call.
+	pushl %ebx
 	call factorial
 	movl 8(%ebp), %eax	# Get the n-1th number of the factorial.
 	imull %eax, %ebx	# Multiply nth and n-1th factorial number.
