@@ -29,8 +29,8 @@
 .globl _start
 _start:
 	pushl 8(%esp)
-	pushl $O_RDONLY
-	call open_fd
+	pushl 4(%esp)
+	call open_fd_in
 	addl $8, %esp
 
 	pushl $BUFFER_SIZE
@@ -49,8 +49,8 @@ _start:
 	movl %eax, %esi	#Sotre number of  data items read.
 
 	pushl 12(%esp)
-	pushl $O_CREAT_WRONLY_TRUNC
-	call open_fd
+	pushl 4(%esp)
+	call open_fd_out
 	addl $8, %esp
 
 	pushl %esi	#Preserved across calls.
@@ -61,7 +61,8 @@ _start:
 	addl $12, %esp
 
 	movl $SYS_EXIT, %eax
-	movl $0, %ebx
+	movl 0(%esp), %ebx
+	#movl $0, %ebx
 	int $0x80
 
 .type read, @function
@@ -124,18 +125,52 @@ uppercase:
 	ret
 
 .type open_fd, @function
-open_fd:
+open_fd_in:
 	pushl %ebp
 	movl %esp, %ebp
 
+	cmpl $3, 8(%ebp)
+	movl 8(%ebp), %eax
+	jne std_in
+
 	movl $SYS_OPEN, %eax
-	movl 8(%ebp), %ecx
 	movl 12(%ebp), %ebx
+	movl $O_RDONLY, %ecx
 	movl $0666, %edx
 	int $0x80
 
 	movl %ebp, %esp
 	popl %ebp
+	ret
+
+	std_in:
+	movl %ebp, %esp
+	popl %ebp
+	movl $STDIN, %eax
+	ret
+
+.type open_fd_out, @function
+open_fd_out:
+	pushl %ebp
+	movl %esp, %ebp
+
+	cmpl $3, 8(%ebp)
+	jne std_out
+
+	movl $SYS_OPEN, %eax
+	movl 12(%ebp), %ebx
+	movl $O_CREAT_WRONLY_TRUNC, %ecx
+	movl $0666, %edx
+	int $0x80
+
+	movl %ebp, %esp
+	popl %ebp
+	ret
+
+	std_out:
+	movl %ebp, %esp
+	popl %ebp
+	movl $STDOUT, %eax
 	ret
 
 #.type close_fd, @function
