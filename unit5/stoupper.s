@@ -22,10 +22,6 @@
 
 .section .text
 
-.globl read
-.globl write
-.globl uppercase
-
 .globl _start
 _start:
 	pushl 8(%esp)
@@ -65,6 +61,7 @@ _start:
 	#movl $0, %ebx
 	int $0x80
 
+.globl read
 .type read, @function
 read:
 	pushl %ebp
@@ -83,6 +80,7 @@ read:
 	popl %ebp
 	ret
 
+.globl write
 .type write, @function
 write:
 	pushl %ebp
@@ -101,6 +99,7 @@ write:
 	popl %ebp
 	ret
 
+.globl uppercase
 .type uppercase, @function
 uppercase:
 	pushl %ebp
@@ -132,7 +131,8 @@ uppercase:
 	popl %ebp
 	ret
 
-.type open_fd, @function
+.globl open_fd_in
+.type open_fd_in, @function
 open_fd_in:
 	pushl %ebp
 	movl %esp, %ebp
@@ -157,6 +157,7 @@ open_fd_in:
 	movl $STDIN, %eax
 	ret
 
+.globl open_fd_out
 .type open_fd_out, @function
 open_fd_out:
 	pushl %ebp
@@ -180,7 +181,7 @@ open_fd_out:
 	popl %ebp
 	movl $STDOUT, %eax
 	ret
-
+.globl close_fd
 .type close_fd, @function
 close_fd:
 	pushl %ebp
