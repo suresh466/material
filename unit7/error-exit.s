@@ -37,6 +37,9 @@ error_exit:
 
 	movl %ebp, %esp
 	popl %ebp
-	movl $SYS_EXIT, %eax
-	movl $1, %ebx
-	int $LINUX_SYSCALL
+	movl $0, %eax
+	ret
+
+	#movl $SYS_EXIT, %eax
+	#movl $1, %ebx
+	#int $LINUX_SYSCALL
