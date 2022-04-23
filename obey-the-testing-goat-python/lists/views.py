@@ -5,4 +5,6 @@ from django.http import HttpResponse
 
 def home_page(request):
     template = 'lists/home.html'
-    return render(request, template)
+    context = {'new_item_text': request.POST.get('item_text', ''),}
+
+    return render(request, template, context)
