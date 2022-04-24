@@ -81,6 +81,7 @@ class NewVisitorTest(LiveServerTestCase):
         inputbox = self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('Buy peacock feathers')
         inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: Buy peacock feathers')
 
         # She notices that her list has a unique url
         edith_list_url = self.browser.current_url
@@ -102,7 +103,7 @@ class NewVisitorTest(LiveServerTestCase):
         # Francis starts a new list by entering a new item. He is less
         # interesting than Edith...
 
-        inputbox = self.browser.find_elements_by_id('id_new_item')
+        inputbox = self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('Buy milk')
         inputbox.send_keys(Keys.ENTER)
         self.wait_for_row_in_list_table('1: Buy milk')
