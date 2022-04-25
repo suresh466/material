@@ -118,6 +118,6 @@ class NewVisitorTest(LiveServerTestCase):
         self.assertNotIn('make a fly', page_text)
         self.assertIn('1: Buy milk', page_text)
 
-        self.fail('Finish the test!')
+        #self.fail('Finish the test!')
 
         # Satisfied they both go back to sleep
