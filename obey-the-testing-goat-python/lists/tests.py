@@ -39,7 +39,6 @@ class ListAndItemModelTest(TestCase):
         second_saved_item = saved_items[1]
         self.assertEqual(first_item.text, 'The first (ever) list item')
         self.assertEqual(first_item.list, list_)
-        print(f'first item: {type(first_item.list)} list_: {type(list_)}')
         self.assertEqual(second_item.text, 'Item the second')
         self.assertEqual(second_item.list, list_)
 
